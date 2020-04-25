@@ -1,0 +1,74 @@
+import pandas as pd
+import numpy as np
+
+from sklearn import metrics
+from functools import reduce
+from  sklearn.metrics  import  roc_auc_score
+from sklearn.utils import resample
+from sklearn.model_selection import train_test_split # Import train_test_split function
+from datetime import timedelta
+from datetime import date
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_val_score
+
+#import data set
+data=pd.read_csv('C:/Users/fgeba/PycharmProjects/untitled/breast_cancer.csv',sep=",")
+#verificacao de missing value
+print(data.info())
+#classificacao da resposta
+data['resposta']= np.where(data['Class']==2,0,1)
+
+#sepaarcao da feature
+features=[
+'Clump Thickness',
+'Uniformity of Cell Size',
+'Uniformity of Cell Shape',
+'Marginal Adhesion',
+'Single Epithelial Cell Size',
+'Bare Nuclei',
+'Bland Chromatin',
+'Normal Nucleoli',
+'Mitoses'
+]
+
+
+X = data[features] # Features
+y = data.resposta # Target variable
+#base out valid
+X_train1, X_test1, y_train1, y_test1 = train_test_split(X, y ,test_size=0.1, random_state=1)
+
+#base validacao
+X_train, X_test, y_train, y_test = train_test_split(X_train1, y_train1 ,test_size=0.2, random_state=1)
+
+
+
+from sklearn.ensemble import RandomForestClassifier
+
+
+#import random florest model
+clf=RandomForestClassifier(n_estimators=30,bootstrap=True,n_jobs  =  - 1 , oob_score  =  True,max_depth=2 )
+
+#Train the model using the training sets y_pred=clf.predict(X_test)
+clf.fit(X_train,y_train)
+print('R^2 Training Score: {:.2f} \nOOB Score: {:.2f} \nR^2 Validation Score: {:.2f}'.format(clf.score(X_train, y_train),
+                                                                                             clf.oob_score_,
+                                                                                             clf.score(X_test, y_test)))
+
+
+y_pred=clf.predict(X_test)
+
+
+print("=== Confusion Matrix random florest ===")
+print(confusion_matrix(y_test, y_pred))
+print('\n')
+print("=== Classification Report ===")
+
+from sklearn.metrics import roc_auc_score
+
+
+# Calculate roc auc
+
+lr_auc = roc_auc_score(y_test, y_pred)
+# summarize scores
+print('random florest: ROC AUC=%.3f' % (lr_auc))
+
